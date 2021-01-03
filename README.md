@@ -37,7 +37,7 @@ The idea behind the form is to register your self as an awesome person, therefor
 
 We will us the following line of code to import the image.
 
-# imgQ = cv2.imread('Query.png')
+     imgQ = cv2.imread('Query.png')
 
 ## Feature of Query Image
 
@@ -68,63 +68,63 @@ For the first question you can simply get the roi from an image editing software
 
 It also allows us to define wether the input field is Text based or Checkbox. This solves our problem 2 as well. Below is the code for Roi Selector.
 
-import cv2
-import random
- 
-path= 'Query.pdf'
-scale = 0.4
- 
-circles = []
-counter = 0
-counter2 = 0
-point1=[]
-point2=[]
-myPoints = []
-myColor=[]
-def mousePoints(event,x,y,flags,params):
-    global counter,point1,point2,counter2,circles,myColor
-    if event == cv2.EVENT_LBUTTONDOWN:
-        if counter==0:
-            point1=int(x//scale),int(y//scale);
-            counter +=1
-            myColor = (random.randint(0,2)*200,random.randint(0,2)*200,random.randint(0,2)*200 )
-        elif counter ==1:
-            point2=int(x//scale),int(y//scale)
-            type = input('Enter Type')
-            name = input ('Enter Name ')
-            myPoints.append([point1,point2,type,name])
-            counter=0
-        circles.append([x,y,myColor])
-        counter2 += 1
- 
-img = cv2.imread(path)
-img = cv2.resize(img, (0, 0), None, scale, scale)
- 
-while True:
-    # To Display points
-    for x,y,color in circles:
-        cv2.circle(img,(x,y),3,color,cv2.FILLED)
-    cv2.imshow("Original Image ", img)
-    cv2.setMouseCallback("Original Image ", mousePoints)
-    if cv2.waitKey(1) &amp; 0xFF == ord('s'):
-        print(myPoints)
+      import cv2
+      import random
+
+      path= 'Query.pdf'
+      scale = 0.4
+
+      circles = []
+      counter = 0
+      counter2 = 0
+      point1=[]
+      point2=[]
+      myPoints = []
+      myColor=[]
+      def mousePoints(event,x,y,flags,params):
+          global counter,point1,point2,counter2,circles,myColor
+          if event == cv2.EVENT_LBUTTONDOWN:
+              if counter==0:
+                  point1=int(x//scale),int(y//scale);
+                  counter +=1
+                  myColor = (random.randint(0,2)*200,random.randint(0,2)*200,random.randint(0,2)*200 )
+              elif counter ==1:
+                  point2=int(x//scale),int(y//scale)
+                  type = input('Enter Type')
+                  name = input ('Enter Name ')
+                  myPoints.append([point1,point2,type,name])
+                  counter=0
+              circles.append([x,y,myColor])
+              counter2 += 1
+
+      img = cv2.imread(path)
+      img = cv2.resize(img, (0, 0), None, scale, scale)
+
+      while True:
+          # To Display points
+          for x,y,color in circles:
+              cv2.circle(img,(x,y),3,color,cv2.FILLED)
+          cv2.imshow("Original Image ", img)
+          cv2.setMouseCallback("Original Image ", mousePoints)
+          if cv2.waitKey(1) &amp; 0xFF == ord('s'):
+              print(myPoints) 
        
        
 We can add a new list by the name roi and place this output in it.
 
-roi = [[(102, 977), (682, 1079), ‘text’, ‘Name’],
-[(742, 979), (1319, 1069), ‘text’, ‘Phone’],
-[(99, 1152), (144, 1199), ‘box’, ‘Sign’],
-[(742, 1149), (789, 1197), ‘box’, ‘Allergic’],
-[(102, 1419), (679, 1509), ‘text’, ‘Email’],
-[(742, 1419), (1317, 1512), ‘text’, ‘Id’],
-[(102, 1594), (672, 1684), ‘text’, ‘City’],
-[(744, 1589), (1327, 1682), ‘text’, ‘Country’]]
+    roi = [[(102, 977), (682, 1079), ‘text’, ‘Name’],
+    [(742, 979), (1319, 1069), ‘text’, ‘Phone’],
+    [(99, 1152), (144, 1199), ‘box’, ‘Sign’],
+    [(742, 1149), (789, 1197), ‘box’, ‘Allergic’],
+    [(102, 1419), (679, 1509), ‘text’, ‘Email’],
+    [(742, 1419), (1317, 1512), ‘text’, ‘Id’],
+    [(102, 1594), (672, 1684), ‘text’, ‘City’],
+    [(744, 1589), (1327, 1682), ‘text’, ‘Country’]]
 
 
 Now we can loop through each of these rois and find the relevant infromaiton. To make sure there are not mistakes in the roi we will display all of the regions. To do this we will first create rectangles on our mask image and then blend it with the original image.
 
-for x,r in enumerate(roi):
+     for x,r in enumerate(roi):
           
         # For displaying the rois
         cv2.rectangle(imgMask, (r[0][0], r[0][1]), (r[1][0], r[1][1]), (0, 
@@ -137,32 +137,32 @@ Now we will check if the roi is text based or checkbox, since they will have dif
 
 For the text we will input it to our pytesseract function. And once we get the result we will append it to the myData list. We can also apply some preprocessing techniques here to enhance the recognition process, but since our images are queit clear, we don’t need that.
 
-if r[2] == 'text':
+     if r[2] == 'text':
             print('{}: {}'.format(r[3],pytesseract.image_to_string(imgCrop)))
             myData.append(pytesseract.image_to_string(imgCrop))
 
 ## Check Box Input
 For the checkbox we have a few simple steps. First we will convert the image to gray scale . Then we will convert it into a binary image using thresholding. Now we can simply count the number of non zero pixel and compare it to a threshold to declare it checked or not checked. Lastly we can append this information to our myData list.
 
-if r[2] == 'box':
-    imgWarpGray = cv2.cvtColor(imgCrop, cv2.COLOR_BGR2GRAY)  
-    imgThresh = cv2.threshold(imgWarpGray, 170, 255, 
-    cv2.THRESH_BINARY_INV)[1]  # APPLY THRESHOLD AND INVERSE
-    totalPixels = cv2.countNonZero(imgThresh)
-    if totalPixels>minThreshold:totalPixels=1
-    else:totalPixels=0
-    print(f'{r[3]}: {totalPixels}')
-    myData.append(totalPixels)
-    
-    
+      if r[2] == 'box':
+        imgWarpGray = cv2.cvtColor(imgCrop, cv2.COLOR_BGR2GRAY)  
+        imgThresh = cv2.threshold(imgWarpGray, 170, 255, 
+        cv2.THRESH_BINARY_INV)[1]  # APPLY THRESHOLD AND INVERSE
+        totalPixels = cv2.countNonZero(imgThresh)
+        if totalPixels>minThreshold:totalPixels=1
+        else:totalPixels=0
+        print(f'{r[3]}: {totalPixels}')
+        myData.append(totalPixels)
+
+
 ## Saving Data to File
 Here is an optional part where we save the data in a file. We can create a table with all the information in it of different forms. Note that this has to be outside the roi for loop since we want to store all of the info of a given form at once i.e not region by region.
 
-with open('DataOutput.csv','a+') as f:
-        for data in myData:
-            f.write(str(data)+',')
-        f.write('\n')
-        
+      with open('DataOutput.csv','a+') as f:
+              for data in myData:
+                  f.write(str(data)+',')
+              f.write('\n')
+
         
  
         
